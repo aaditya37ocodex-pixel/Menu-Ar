@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #090a0f;
+  --color-bg-elevated: #101218;
+  --color-surface: #151824;
+  --color-surface-2: #1c2030;
+  --color-fg: #f3ede3;
+  --color-muted: #b7aa9a;
+  --color-subtle: #8a7d70;
+  --color-border: rgb(243 237 227 / 0.1);
+  --color-border-strong: rgb(243 237 227 / 0.18);
+  --color-accent: #e0a96d;
+  --color-accent-2: #c4894a;
+  --color-accent-fg: #1a1208;
+  --color-veg: #7dba8a;
+  --color-nonveg: #d97a6c;
+  --color-danger: #e88a7e;
+  --color-success: #7dba8a;
+  --font-display: "Playfair Display", "Times New Roman", serif;
+  --font-sans: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
+  --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.06), 0 18px 40px -24px rgb(0 0 0 / 0.65);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --restaurant-accent: var(--color-accent);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--color-bg);
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-accent) 40%, transparent);
+    color: var(--color-fg);
+  }
+
+  img {
+    outline: 1px solid rgb(255 255 255 / 0.08);
+    outline-offset: -1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.menuar-shell {
+  min-height: 100dvh;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgb(224 169 109 / 0.08), transparent 55%),
+    radial-gradient(900px 480px at -10% 20%, rgb(111 179 217 / 0.05), transparent 50%),
+    var(--color-bg);
+}
+
+.hairline {
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+.gold-text {
+  color: var(--color-accent);
+}
