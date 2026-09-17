@@ -1,13 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getSql } from "@/lib/db";
+import { getDemoPublicMenu, isDemoSlug } from "./demo-menu";
 import { ensureDemoRestaurant } from "./ensure-demo";
 import { mapCategory, mapItem, mapRestaurant, mapTable } from "./map";
 import { asNumber, type OrderStatus, type PublicMenu } from "./types";
 
+function hasDatabase() {
+  return Boolean(typeof process !== "undefined" && process.env.DATABASE_URL?.trim());
+}
+
 export const getPublicMenu = createServerFn({ method: "GET" })
   .validator(z.object({ slug: z.string().min(1) }))
   .handler(async ({ data }): Promise<PublicMenu | null> => {
+    if (!hasDatabase()) {
+      return isDemoSlug(data.slug) ? getDemoPublicMenu() : null;
+    }
     await ensureDemoRestaurant();
     const sql = await getSql();
     const rests = await sql<Record<string, unknown>>`
@@ -69,6 +77,7 @@ export const trackEvent = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
+    if (!hasDatabase()) return { ok: true };
     const sql = await getSql();
     await sql`
       insert into analytics_events (id, restaurant_id, menu_item_id, event_type, device_type)
@@ -102,6 +111,18 @@ export const placeOrder = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
+    if (!hasDatabase()) {
+      const menu = getDemoPublicMenu();
+      if (!isDemoSlug(data.restaurantSlug)) throw new Error("Restaurant not found");
+      let total = 0;
+      for (const line of data.items) {
+        const item = menu.items.find((i) => i.id === line.menuItemId);
+        if (item) total += item.price * line.quantity;
+      }
+      if (!total) throw new Error("No available items in this order");
+      return { orderId: crypto.randomUUID(), total, status: "pending" as OrderStatus };
+    }
+
     await ensureDemoRestaurant();
     const sql = await getSql();
     const rests = await sql<Record<string, unknown>>`
@@ -119,11 +140,11 @@ export const placeOrder = createServerFn({ method: "POST" })
     let total = 0;
     const lines: Array<{ id: string; name: string; qty: number; price: number }> = [];
     for (const line of data.items) {
-      const item = byId.get(line.menuItemId);
-      if (!item || !item.is_available) continue;
-      const price = asNumber(item.price);
+      const found = byId.get(line.menuItemId);
+      if (!found || !found.is_available) continue;
+      const price = asNumber(found.price);
       total += price * line.quantity;
-      lines.push({ id: item.id, name: item.name, qty: line.quantity, price });
+      lines.push({ id: found.id, name: found.name, qty: line.quantity, price });
     }
     if (!lines.length) throw new Error("No available items in this order");
 
