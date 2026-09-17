@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Box, QrCode, Scan, Store } from "lucide-react";
 import { MenuArWordmark } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
+import { DEMO_IMAGES } from "@/lib/menuar/demo-menu";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -43,13 +44,13 @@ function Home() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <Link to="/dashboard">Restaurant dashboard</Link>
+                <Link to="/login">Restaurant dashboard</Link>
               </Button>
             </div>
           </div>
           <div className="overflow-hidden rounded-[2rem] border border-border bg-surface shadow-card">
             <img
-              src="/food/classic-burger.jpg"
+              src={DEMO_IMAGES.burger}
               alt="Classic burger in 3D-ready plating"
               className="aspect-[4/3] w-full object-cover"
             />
@@ -106,14 +107,14 @@ function Home() {
                 orders. Guests never see the dashboard.
               </p>
               <Button asChild className="mt-6">
-                <Link to="/dashboard">
+                <Link to="/login">
                   <Store className="size-4" />
                   Open dashboard
                 </Link>
               </Button>
             </div>
             <img
-              src="/food/grilled-chicken-salad.jpg"
+              src={DEMO_IMAGES.salad}
               alt="Grilled chicken salad"
               className="h-full min-h-56 w-full object-cover"
             />
