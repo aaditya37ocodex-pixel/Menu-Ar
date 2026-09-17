@@ -1,23 +1,23 @@
 import { pendingMigrations } from "../../scripts/migration-plan.mjs";
 
-export type DbSource = "neon" | "pglite";
+export type DbSource = "neon" | "pglite" | "none";
 
 const rawDatabaseUrl =
   typeof process !== "undefined" ? process.env.DATABASE_URL : undefined;
 const databaseUrl =
   rawDatabaseUrl && rawDatabaseUrl.trim() ? rawDatabaseUrl : undefined;
 
-export const dbSource: DbSource = databaseUrl ? "neon" : "pglite";
+const onVercel =
+  typeof process !== "undefined" && Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
+
+export const dbSource: DbSource = databaseUrl ? "neon" : onVercel ? "none" : "pglite";
 
 export interface Sql {
   <T = Record<string, unknown>>(
     strings: TemplateStringsArray,
     ...values: unknown[]
   ): Promise<T[]>;
-  query<T = Record<string, unknown>>(
-    text: string,
-    params?: unknown[],
-  ): Promise<T[]>;
+  query<T = Record<string, unknown>>(text: string, params?: unknown[]): Promise<T[]>;
 }
 
 const globalRef = globalThis as typeof globalThis & {
@@ -121,6 +121,9 @@ async function createSql(): Promise<Sql> {
       "@/lib/db is server-only — call getSql() from a createServerFn handler or a server route loader, never from client code.",
     );
   }
+  if (dbSource === "none") {
+    throw new Error("No DATABASE_URL on Vercel — use the static demo menu instead of PGLite.");
+  }
   return dbSource === "neon" ? createNeonSql() : createPgliteSql();
 }
 
@@ -145,15 +148,4 @@ export async function getPglite(): Promise<import("@electric-sql/pglite").PGlite
 export function ensureDbReady(): Promise<void> {
   if (dbSource !== "pglite") return Promise.resolve();
   return getSql().then(() => undefined);
-}
-
-const globalBoot = globalThis as typeof globalThis & {
-  __pgBootstrapPromise__?: Promise<void>;
-};
-if (typeof window === "undefined" && dbSource === "pglite") {
-  globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
-    globalBoot.__pgBootstrapPromise__ = undefined;
-    console.error("[db] PGLite bootstrap failed:", err);
-    throw err;
-  });
 }
