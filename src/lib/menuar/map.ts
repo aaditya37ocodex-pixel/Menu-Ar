@@ -63,9 +63,7 @@ export function mapItem(row: Row): MenuItem {
     modelKey: row.model_key ? String(row.model_key) : null,
     ingredients: parseJson<string[]>(row.ingredients, []),
     allergens: parseJson<string[]>(row.allergens, []),
-    dietary: (["veg", "nonveg", "vegan"].includes(dietary)
-      ? dietary
-      : "veg") as Dietary,
+    dietary: (["veg", "nonveg", "vegan"].includes(dietary) ? dietary : "veg") as Dietary,
     spicyLevel: asNumber(row.spicy_level),
     prepTimeMinutes: row.prep_time_minutes == null ? null : asNumber(row.prep_time_minutes),
     calories: row.calories == null ? null : asNumber(row.calories),
